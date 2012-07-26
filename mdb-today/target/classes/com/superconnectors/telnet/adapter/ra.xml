@@ -1,0 +1,32 @@
+<connector xmlns="http://java.sun.com/xml/ns/j2ee"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+           http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd"
+           version="1.5">
+
+  <description>Telnet ResourceAdapter</description>
+  <display-name>Telnet ResourceAdapter</display-name>
+
+  <vendor-name>SuperConnectors</vendor-name>
+
+  <eis-type>Telnet Adapter</eis-type>
+
+  <resourceadapter-version>1.0</resourceadapter-version>
+
+  <resourceadapter id="TelnetResourceAdapter">
+
+    <resourceadapter-class>com.superconnectors.telnet.adapter.TelnetResourceAdapter</resourceadapter-class>
+
+    <inbound-resourceadapter>
+      <messageadapter>
+        <messagelistener>
+          <messagelistener-type>com.superconnectors.telnet.api.TelnetListener</messagelistener-type>
+          <activationspec>
+            <activationspec-class>com.superconnectors.telnet.adapter.TelnetActivationSpec</activationspec-class>
+          </activationspec>
+        </messagelistener>
+      </messageadapter>
+    </inbound-resourceadapter>
+
+  </resourceadapter>
+</connector>
