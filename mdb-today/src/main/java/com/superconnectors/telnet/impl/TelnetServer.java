@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 
 public class TelnetServer implements TtyCodes {
 
@@ -69,7 +70,8 @@ public class TelnetServer implements TtyCodes {
     public void activate() throws IOException {
         if (running.compareAndSet(false, true)) {
             serverSocket = new ServerSocket(spec.getPort());
-
+            final Logger logger = Logger.getLogger(TelnetServer.class.getName());
+            logger.info("Listening on " + serverSocket.getLocalPort());
             while (running.get()) {
                 final Socket accept = serverSocket.accept();
                 final Thread thread = new Thread() {
