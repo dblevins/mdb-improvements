@@ -17,6 +17,8 @@ package org.developer.application;
 
 import com.superconnectors.telnet.api.Command;
 import com.superconnectors.telnet.api.Option;
+import com.superconnectors.telnet.api.Port;
+import com.superconnectors.telnet.api.Prompt;
 import com.superconnectors.telnet.api.TelnetListener;
 
 import javax.ejb.ActivationConfigProperty;
@@ -27,10 +29,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-@MessageDriven(activationConfig = {
-        @ActivationConfigProperty(propertyName = "port", propertyValue = "2020"),
-        @ActivationConfigProperty(propertyName = "prompt", propertyValue = "pronto>")
-})
+@MessageDriven
+@Port(2020)
+@Prompt("pronto>")
 public class MyMdb implements TelnetListener {
 
     private final Properties properties = new Properties();

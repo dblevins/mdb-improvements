@@ -16,12 +16,15 @@
 package com.superconnectors.telnet.adapter;
 
 import com.superconnectors.telnet.api.Command;
+import com.superconnectors.telnet.api.Port;
+import com.superconnectors.telnet.api.Prompt;
 import com.superconnectors.telnet.impl.Cmd;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.InvalidPropertyException;
 import javax.resource.spi.ResourceAdapter;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,11 +67,19 @@ public class TelnetActivationSpec implements ActivationSpec {
 
     @Override
     public void validate() throws InvalidPropertyException {
-        if (port <= 0) throw new InvalidPropertyException("port");
-        if (prompt == null || prompt.length() == 0) {
-            prompt = "prompt>";
+        // Set Port
+        final Port port = (Port) beanClass.getAnnotation(Port.class);
+        if (port != null) {
+            this.port = port.value();
         }
 
+        // Set Prompt
+        final Prompt prompt = (Prompt) beanClass.getAnnotation(Prompt.class);
+        if (prompt != null) {
+            this.prompt = prompt.value();
+        }
+
+        // Get Commands
         final Method[] methods = beanClass.getMethods();
         for (Method method : methods) {
             if (method.isAnnotationPresent(Command.class)) {
@@ -77,7 +88,12 @@ public class TelnetActivationSpec implements ActivationSpec {
             }
         }
 
-        if (cmds.size() == 0) {
+        // Validate
+        if (this.port <= 0) throw new InvalidPropertyException("port");
+        if (this.prompt == null || this.prompt.length() == 0) {
+            this.prompt = "prompt>";
+        }
+        if (this.cmds.size() == 0) {
             throw new InvalidPropertyException("No @Command methods");
         }
     }
