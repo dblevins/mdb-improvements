@@ -640,3 +640,7 @@ Free to decide what commands to expose, users of the improved Telnet Connector m
             return sb.toString();
         }
     }
+
+# Other Connector Resoruces
+
+See also https://github.com/dblevins/jca-quickstart
