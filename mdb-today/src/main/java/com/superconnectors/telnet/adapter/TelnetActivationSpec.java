@@ -33,16 +33,7 @@ public class TelnetActivationSpec implements ActivationSpec {
 
     private ResourceAdapter resourceAdapter;
     private final List<Cmd> cmds = new ArrayList<Cmd>();
-    private int port;
     private String prompt;
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
 
     public String getPrompt() {
         return prompt;
@@ -58,7 +49,6 @@ public class TelnetActivationSpec implements ActivationSpec {
 
     @Override
     public void validate() throws InvalidPropertyException {
-        if (port <= 0) throw new InvalidPropertyException("port");
         if (prompt == null || prompt.length() == 0) {
             prompt = "prompt>";
         }

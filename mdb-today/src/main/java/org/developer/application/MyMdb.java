@@ -26,7 +26,6 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 @MessageDriven(activationConfig = {
-        @ActivationConfigProperty(propertyName = "port", propertyValue = "2020"),
         @ActivationConfigProperty(propertyName = "prompt", propertyValue = "pronto>")
 })
 public class MyMdb implements TelnetListener {

@@ -36,6 +36,19 @@ public class TelnetResourceAdapter implements javax.resource.spi.ResourceAdapter
 
     private final Map<Integer, TelnetServer> activated = new HashMap<Integer, TelnetServer>();
 
+    /**
+     * Corresponds to the
+     */
+    private int port;
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
     public void start(BootstrapContext bootstrapContext) throws ResourceAdapterInternalException {
     }
 
@@ -50,11 +63,11 @@ public class TelnetResourceAdapter implements javax.resource.spi.ResourceAdapter
         // This messageEndpoint instance is also castable to the ejbClass of the MDB
         final TelnetListener telnetListener = (TelnetListener) messageEndpoint;
 
-        final TelnetServer telnetServer = new TelnetServer(telnetActivationSpec, telnetListener);
+        final TelnetServer telnetServer = new TelnetServer(telnetActivationSpec, telnetListener, port);
 
         try {
             telnetServer.activate();
-            activated.put(telnetActivationSpec.getPort(), telnetServer);
+            activated.put(port, telnetServer);
         } catch (IOException e) {
             throw new ResourceException(e);
         }
@@ -63,7 +76,7 @@ public class TelnetResourceAdapter implements javax.resource.spi.ResourceAdapter
     public void endpointDeactivation(MessageEndpointFactory messageEndpointFactory, ActivationSpec activationSpec) {
         final TelnetActivationSpec telnetActivationSpec = (TelnetActivationSpec) activationSpec;
 
-        final TelnetServer telnetServer = activated.remove(telnetActivationSpec.getPort());
+        final TelnetServer telnetServer = activated.remove(port);
 
         try {
             telnetServer.deactivate();
