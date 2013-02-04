@@ -430,7 +430,7 @@ Here's what the output might look like:
 With a couple small tweaks in the specs, we can add great amounts of expressiveness to the existing MDB/Connector relationship.
 
  - Allow the ResourceAdapter to obtain the bean class through the ActivationSpec
- - Allow the ResourceAdapter to obtain a no-interface view of the bean
+ - Allow the ResourceAdapter to obtain a MessageEndpoint that is similar to a no-interface view of the bean
 
 This can be done with text and no new API classes or signatures are required.
 
