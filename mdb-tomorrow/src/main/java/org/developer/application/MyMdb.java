@@ -17,20 +17,15 @@ package org.developer.application;
 
 import com.superconnectors.telnet.api.Command;
 import com.superconnectors.telnet.api.Option;
-import com.superconnectors.telnet.api.Port;
 import com.superconnectors.telnet.api.Prompt;
 import com.superconnectors.telnet.api.TelnetListener;
 
-import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
 @MessageDriven
-@Port(2020)
 @Prompt("pronto>")
 public class MyMdb implements TelnetListener {
 

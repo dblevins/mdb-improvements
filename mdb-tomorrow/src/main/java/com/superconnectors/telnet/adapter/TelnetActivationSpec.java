@@ -16,7 +16,6 @@
 package com.superconnectors.telnet.adapter;
 
 import com.superconnectors.telnet.api.Command;
-import com.superconnectors.telnet.api.Port;
 import com.superconnectors.telnet.api.Prompt;
 import com.superconnectors.telnet.impl.Cmd;
 
@@ -24,7 +23,6 @@ import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.InvalidPropertyException;
 import javax.resource.spi.ResourceAdapter;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,17 +31,8 @@ public class TelnetActivationSpec implements ActivationSpec {
 
     private ResourceAdapter resourceAdapter;
     private final List<Cmd> cmds = new ArrayList<Cmd>();
-    private int port;
     private String prompt;
     private Class beanClass;
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
 
     public String getPrompt() {
         return prompt;
@@ -67,12 +56,6 @@ public class TelnetActivationSpec implements ActivationSpec {
 
     @Override
     public void validate() throws InvalidPropertyException {
-        // Set Port
-        final Port port = (Port) beanClass.getAnnotation(Port.class);
-        if (port != null) {
-            this.port = port.value();
-        }
-
         // Set Prompt
         final Prompt prompt = (Prompt) beanClass.getAnnotation(Prompt.class);
         if (prompt != null) {
@@ -89,7 +72,6 @@ public class TelnetActivationSpec implements ActivationSpec {
         }
 
         // Validate
-        if (this.port <= 0) throw new InvalidPropertyException("port");
         if (this.prompt == null || this.prompt.length() == 0) {
             this.prompt = "prompt>";
         }

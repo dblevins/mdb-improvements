@@ -42,12 +42,15 @@ public class TelnetServer implements TtyCodes {
 
     private final TelnetActivationSpec spec;
 
+    private final int port;
+
     private final Map<String, Cmd> cmds = new TreeMap<String, Cmd>();
 
     private final AtomicBoolean running = new AtomicBoolean();
     private ServerSocket serverSocket;
 
-    public TelnetServer(TelnetActivationSpec spec, TelnetListener listener) {
+    public TelnetServer(TelnetActivationSpec spec, TelnetListener listener, int port) {
+        this.port = port;
         this.spec = spec;
         this.listener = listener;
 
@@ -69,7 +72,7 @@ public class TelnetServer implements TtyCodes {
 
     public void activate() throws IOException {
         if (running.compareAndSet(false, true)) {
-            serverSocket = new ServerSocket(spec.getPort());
+            serverSocket = new ServerSocket(port);
             final Logger logger = Logger.getLogger(TelnetServer.class.getName());
             logger.info("Listening on " + serverSocket.getLocalPort());
             while (running.get()) {
