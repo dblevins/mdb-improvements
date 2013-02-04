@@ -94,7 +94,7 @@ For now we'll live with our less flexible, but far easier set of commands.
 
 ### Telnet ActivationSpec
 
-The following is the `ActivationSpec` for our Telnet Connector.  It has two configuration options; `port` and `prompt`
+The following is the `ActivationSpec` for our Telnet Connector.  It has one configuration options; `prompt`
 
     package com.superconnectors.telnet.adapter;
 
@@ -104,16 +104,7 @@ The following is the `ActivationSpec` for our Telnet Connector.  It has two conf
 
         private ResourceAdapter resourceAdapter;
         private final List<Cmd> cmds = new ArrayList<Cmd>();
-        private int port;
         private String prompt;
-
-        public int getPort() {
-            return port;
-        }
-
-        public void setPort(int port) {
-            this.port = port;
-        }
 
         public String getPrompt() {
             return prompt;
@@ -129,7 +120,6 @@ The following is the `ActivationSpec` for our Telnet Connector.  It has two conf
 
         @Override
         public void validate() throws InvalidPropertyException {
-            if (port <= 0) throw new InvalidPropertyException("port");
             if (prompt == null || prompt.length() == 0) {
                 prompt = "prompt>";
             }
@@ -156,10 +146,10 @@ The following is the `ActivationSpec` for our Telnet Connector.  It has two conf
         }
     }
 
-The Application Developer can set the `port` and `prompt` via the standard EJB `@javax.ejb.ActivationConfigProperty` annotations in the `@javax.ejb.MessageDriven` annotation
+The Application Developer can set `prompt` via the standard EJB `@javax.ejb.ActivationConfigProperty` annotations in the `@javax.ejb.MessageDriven` annotation
 on the class where the MDB is declared.
 
-The MDB Container creates the `TelnetActivationSpec` instance, sets the `port` and `prompt` using the data from the `@MessageDrive` & `@ActivationConfigProperty` annotations,
+The MDB Container creates the `TelnetActivationSpec` instance, sets the `prompt` using the data from the `@MessageDrive` & `@ActivationConfigProperty` annotations,
 then hands it to our Resource Adapter.
 
 ### Telnet ResourceAdapter
@@ -172,10 +162,10 @@ In this method our `ResourceAdapter` is given essentially a factory for creating
 object (`ActivationSpec` instance).
 
     package com.superconnectors.telnet.adapter;
-
+    
     import com.superconnectors.telnet.api.TelnetListener;
     import com.superconnectors.telnet.impl.TelnetServer;
-
+    
     import javax.resource.ResourceException;
     import javax.resource.spi.ActivationSpec;
     import javax.resource.spi.BootstrapContext;
@@ -186,57 +176,71 @@ object (`ActivationSpec` instance).
     import java.io.IOException;
     import java.util.HashMap;
     import java.util.Map;
-
+    
     /**
      * @version $Revision$ $Date$
      */
     public class TelnetResourceAdapter implements javax.resource.spi.ResourceAdapter {
-
+    
         private final Map<Integer, TelnetServer> activated = new HashMap<Integer, TelnetServer>();
-
+    
+        /**
+         * Corresponds to the ra.xml <config-property>
+         */
+        private int port;
+    
+        public int getPort() {
+            return port;
+        }
+    
+        public void setPort(int port) {
+            this.port = port;
+        }
+    
         public void start(BootstrapContext bootstrapContext) throws ResourceAdapterInternalException {
         }
-
+    
         public void stop() {
         }
-
+    
         public void endpointActivation(MessageEndpointFactory messageEndpointFactory, ActivationSpec activationSpec) throws ResourceException {
             final TelnetActivationSpec telnetActivationSpec = (TelnetActivationSpec) activationSpec;
-
+    
             final MessageEndpoint messageEndpoint = messageEndpointFactory.createEndpoint(null);
-
+    
+            // This messageEndpoint instance is also castable to the ejbClass of the MDB
             final TelnetListener telnetListener = (TelnetListener) messageEndpoint;
-
-            final TelnetServer telnetServer = new TelnetServer(telnetActivationSpec, telnetListener);
-
+    
+            final TelnetServer telnetServer = new TelnetServer(telnetActivationSpec, telnetListener, port);
+    
             try {
                 telnetServer.activate();
-                activated.put(telnetActivationSpec.getPort(), telnetServer);
+                activated.put(port, telnetServer);
             } catch (IOException e) {
                 throw new ResourceException(e);
             }
         }
-
+    
         public void endpointDeactivation(MessageEndpointFactory messageEndpointFactory, ActivationSpec activationSpec) {
             final TelnetActivationSpec telnetActivationSpec = (TelnetActivationSpec) activationSpec;
-
-            final TelnetServer telnetServer = activated.remove(telnetActivationSpec.getPort());
-
+    
+            final TelnetServer telnetServer = activated.remove(port);
+    
             try {
                 telnetServer.deactivate();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
+    
             final MessageEndpoint endpoint = (MessageEndpoint) telnetServer.getListener();
-
+    
             endpoint.release();
         }
-
+    
         public XAResource[] getXAResources(ActivationSpec[] activationSpecs) throws ResourceException {
             return new XAResource[0];
         }
-
+    
     }
 
 Note that the `TelnetListener` object created by the MDB Container also implements `MessageEndpoint`.  This is possible
@@ -278,6 +282,12 @@ To package it all up, we create a `ra.xml` file for the Telnet Connector like th
 
         <resourceadapter-class>com.superconnectors.telnet.adapter.TelnetResourceAdapter</resourceadapter-class>
 
+        <config-property>
+          <config-property-name>port</config-property-name>
+          <config-property-type>java.lang.Integer</config-property-type>
+          <config-property-value>2020</config-property-value>
+        </config-property>
+
         <inbound-resourceadapter>
           <messageadapter>
             <messagelistener>
@@ -318,7 +328,6 @@ app that wants to use our Telnet Connector.
     import java.util.regex.Pattern;
 
     @MessageDriven(activationConfig = {
-            @ActivationConfigProperty(propertyName = "port", propertyValue = "2020"),
             @ActivationConfigProperty(propertyName = "prompt", propertyValue = "pronto>")
     })
     public class MyMdb implements TelnetListener {
@@ -477,10 +486,11 @@ Second, we'll update our `TelnetActivationSpec` so that it requests the `ejbClas
 in any MDBs that may use our Telnet Connector.  Note we can simplify our `validate` method as well.
 
     package com.superconnectors.telnet.adapter;
-
+    
     import com.superconnectors.telnet.api.Command;
+    import com.superconnectors.telnet.api.Prompt;
     import com.superconnectors.telnet.impl.Cmd;
-
+    
     import javax.resource.ResourceException;
     import javax.resource.spi.ActivationSpec;
     import javax.resource.spi.InvalidPropertyException;
@@ -488,68 +498,65 @@ in any MDBs that may use our Telnet Connector.  Note we can simplify our `valida
     import java.lang.reflect.Method;
     import java.util.ArrayList;
     import java.util.List;
-
+    
     public class TelnetActivationSpec implements ActivationSpec {
-
+    
         private ResourceAdapter resourceAdapter;
         private final List<Cmd> cmds = new ArrayList<Cmd>();
-        private int port;
         private String prompt;
-        private Class ejbClass;
-
-        public int getPort() {
-            return port;
-        }
-
-        public void setPort(int port) {
-            this.port = port;
-        }
-
+        private Class beanClass;
+    
         public String getPrompt() {
             return prompt;
         }
-
+    
         public void setPrompt(String prompt) {
             this.prompt = prompt;
         }
-
-        public Class getEjbClass() {
-            return ejbClass;
+    
+        public Class getBeanClass() {
+            return beanClass;
         }
-
-        public void setEjbClass(Class ejbClass) {
-            this.ejbClass = ejbClass;
+    
+        public void setBeanClass(Class beanClass) {
+            this.beanClass = beanClass;
         }
-
+    
         public List<Cmd> getCmds() {
             return cmds;
         }
-
+    
         @Override
         public void validate() throws InvalidPropertyException {
-            if (port <= 0) throw new InvalidPropertyException("port");
-            if (prompt == null || prompt.length() == 0) {
-                prompt = "prompt>";
+            // Set Prompt
+            final Prompt prompt = (Prompt) beanClass.getAnnotation(Prompt.class);
+            if (prompt != null) {
+                this.prompt = prompt.value();
             }
-
-            final Method[] methods = ejbClass.getMethods();
+    
+            // Get Commands
+            final Method[] methods = beanClass.getMethods();
             for (Method method : methods) {
                 if (method.isAnnotationPresent(Command.class)) {
                     final Command command = method.getAnnotation(Command.class);
-                    cmds.add(new Cmd(command.name(), method));
+                    cmds.add(new Cmd(command.value(), method));
                 }
             }
-
-            if (cmds.size() == 0) {
+    
+            // Validate
+            if (this.prompt == null || this.prompt.length() == 0) {
+                this.prompt = "prompt>";
+            }
+            if (this.cmds.size() == 0) {
                 throw new InvalidPropertyException("No @Command methods");
             }
         }
-
+    
         @Override
         public ResourceAdapter getResourceAdapter() {
             return resourceAdapter;
         }
-
+    
         @Override
         public void setResourceAdapter(ResourceAdapter ra) throws ResourceException {
             this.resourceAdapter = ra;
@@ -570,11 +577,11 @@ We might, however, add some comments in the `TelnetResourceAdapter` code to make
         // This messageEndpoint instance is also castable to the ejbClass of the MDB
         final TelnetListener telnetListener = (TelnetListener) messageEndpoint;
 
-        final TelnetServer telnetServer = new TelnetServer(telnetActivationSpec, telnetListener);
+        final TelnetServer telnetServer = new TelnetServer(telnetActivationSpec, telnetListener, port);
 
         try {
             telnetServer.activate();
-            activated.put(telnetActivationSpec.getPort(), telnetServer);
+            activated.put(port, telnetServer);
         } catch (IOException e) {
             throw new ResourceException(e);
         }
@@ -600,7 +607,6 @@ Free to decide what commands to expose, users of the improved Telnet Connector m
     import java.util.regex.Pattern;
 
     @MessageDriven(activationConfig = {
-            @ActivationConfigProperty(propertyName = "port", propertyValue = "2020"),
             @ActivationConfigProperty(propertyName = "prompt", propertyValue = "pronto>")
     })
     public class MyMdb implements TelnetListener {
