@@ -37,7 +37,7 @@ public class TelnetResourceAdapter implements javax.resource.spi.ResourceAdapter
     private final Map<Integer, TelnetServer> activated = new HashMap<Integer, TelnetServer>();
 
     /**
-     * Corresponds to the
+     * Corresponds to the ra.xml <config-property>
      */
     private int port;
 
