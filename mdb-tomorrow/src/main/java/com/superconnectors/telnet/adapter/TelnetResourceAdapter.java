@@ -93,4 +93,21 @@ public class TelnetResourceAdapter implements javax.resource.spi.ResourceAdapter
         return new XAResource[0];
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof TelnetResourceAdapter)) {
+            return false;
+        }
+        TelnetResourceAdapter other = (TelnetResourceAdapter) obj;
+        return this.port == other.port;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.port;
+    }
+
 }
