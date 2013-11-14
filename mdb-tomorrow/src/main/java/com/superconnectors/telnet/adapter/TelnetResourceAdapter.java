@@ -15,23 +15,35 @@
  */
 package com.superconnectors.telnet.adapter;
 
-import com.superconnectors.telnet.api.TelnetListener;
-import com.superconnectors.telnet.impl.TelnetServer;
-
-import javax.resource.ResourceException;
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.BootstrapContext;
-import javax.resource.spi.ResourceAdapterInternalException;
-import javax.resource.spi.endpoint.MessageEndpoint;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.transaction.xa.XAResource;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.resource.ResourceException;
+import javax.resource.spi.Activation;
+import javax.resource.spi.ActivationSpec;
+import javax.resource.spi.BootstrapContext;
+import javax.resource.spi.ConfigProperty;
+import javax.resource.spi.Connector;
+import javax.resource.spi.ResourceAdapterInternalException;
+import javax.resource.spi.endpoint.MessageEndpoint;
+import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.transaction.xa.XAResource;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
+import com.superconnectors.telnet.api.TelnetListener;
+import com.superconnectors.telnet.impl.TelnetServer;
+
 /**
  * @version $Revision$ $Date$
  */
+@Connector(
+    description = "Telnet ResourceAdapter",
+    displayName = "Telnet ResourceAdapter",
+    eisType = "Telnet Adapter",
+    version = "1.0"
+)
 public class TelnetResourceAdapter implements javax.resource.spi.ResourceAdapter {
 
     private final Map<Integer, TelnetServer> activated = new HashMap<Integer, TelnetServer>();
@@ -39,13 +51,16 @@ public class TelnetResourceAdapter implements javax.resource.spi.ResourceAdapter
     /**
      * Corresponds to the ra.xml <config-property>
      */
-    private int port;
+    @Size(min = 1, max = 0xFFFF)
+    @ConfigProperty(defaultValue = "2020")
+    @NotNull
+    private Integer port;
 
-    public int getPort() {
+    public Integer getPort() {
         return port;
     }
 
-    public void setPort(int port) {
+    public void setPort(Integer port) {
         this.port = port;
     }
 
