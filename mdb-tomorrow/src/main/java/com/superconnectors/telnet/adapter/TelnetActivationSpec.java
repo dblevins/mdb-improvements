@@ -17,9 +17,11 @@ package com.superconnectors.telnet.adapter;
 
 import com.superconnectors.telnet.api.Command;
 import com.superconnectors.telnet.api.Prompt;
+import com.superconnectors.telnet.api.TelnetListener;
 import com.superconnectors.telnet.impl.Cmd;
 
 import javax.resource.ResourceException;
+import javax.resource.spi.Activation;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.InvalidPropertyException;
 import javax.resource.spi.ResourceAdapter;
@@ -27,12 +29,13 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+@Activation(messageListeners = TelnetListener.class)
 public class TelnetActivationSpec implements ActivationSpec {
 
     private ResourceAdapter resourceAdapter;
     private final List<Cmd> cmds = new ArrayList<Cmd>();
     private String prompt;
-    private Class beanClass;
+    private Class<?> beanClass;
 
     public String getPrompt() {
         return prompt;
@@ -42,11 +45,11 @@ public class TelnetActivationSpec implements ActivationSpec {
         this.prompt = prompt;
     }
 
-    public Class getBeanClass() {
+    public Class<?> getBeanClass() {
         return beanClass;
     }
 
-    public void setBeanClass(Class beanClass) {
+    public void setBeanClass(Class<?> beanClass) {
         this.beanClass = beanClass;
     }
 

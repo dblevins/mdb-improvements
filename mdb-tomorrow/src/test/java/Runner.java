@@ -13,16 +13,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.ClassLoaderAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * @version $Revision$ $Date$
@@ -41,7 +40,6 @@ public class Runner {
 
         final EnterpriseArchive rar = ShrinkWrap.create(EnterpriseArchive.class, "test.rar");
         rar.addAsModule(rarLib);
-        rar.addAsManifestResource(new ClassLoaderAsset("com/superconnectors/telnet/adapter/ra.xml"), "ra.xml");
         System.out.println(rar.toString(true));
         System.out.println();
 
